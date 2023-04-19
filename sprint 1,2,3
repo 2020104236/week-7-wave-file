@@ -1,0 +1,30 @@
+#include <iostream>
+#include <fstream>
+#include <cmath>
+using namespace std;
+
+int main() {
+	// 헤더파일과 데이터 10초 읽기
+	char header[44];
+	ifstream qq("Beatles-LetItBe-wav_30s-1.wav", ios::binary | ios::in);
+	if (!qq) return 666;
+	qq.read(header, sizeof(header));
+	short* NumChannels = (short*)(header + 22); cout << "NumChannels : " << *NumChannels << endl;
+	int* SampleRate = (int*)(header + 24); cout << "SampleRate : " << *SampleRate << endl;
+	int* ByteRate = (int*)(header + 28); cout << "ByteRate : " << *ByteRate << endl;
+	//10초 분량 data 읽기
+	int NumSamples = SampleRate[0] * 10;
+	short* data = new short[NumSamples];
+	// Mono로 변경, 따라서 ByteRate도 변경
+	*NumChannels = 1;
+	*ByteRate = NumChannels[0] * SampleRate[0] * sizeof(short);
+	qq.read((char*)data, NumSamples * sizeof(short));
+	qq.close();
+	//my.wav 만들기
+	ofstream ww("my.wav", ios::binary | ios::out);
+	if (!ww) return 667;
+	ww.write(header, sizeof(header));
+	ww.write((char*)data, NumSamples * sizeof(short));
+	ww.close();
+}
+
