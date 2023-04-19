@@ -1,0 +1,62 @@
+#include <iostream>
+#include <cmath>
+#include <fstream>
+using namespace std;
+const float pi = 3.141592;
+void sound(ofstream&, float, float, float, int*);
+void plussound(ofstream&, float, float, float, float, int*);
+int main() {
+	char header[44];
+	ifstream qq("Beatles-LetItBe-wav_30s-1.wav", ios::binary | ios::in);
+	if (!qq) return 666;
+	qq.read(header, sizeof(header));
+	short* NumChannels = (short*)(header + 22);
+	int* SampleRate = (int*)(header + 24);
+	int* ByteRate = (int*)(header + 28);
+	*NumChannels = 2;
+	*ByteRate = NumChannels[0] * SampleRate[0] * sizeof(short);
+	qq.close();
+	ofstream ee("your.wav", ios::binary | ios::out);
+	if (!ee)return 667;
+	ee.write(header, sizeof(header));
+	plussound(ee, 261.63,311.13, 8000, 1, SampleRate);
+	plussound(ee, 349.23,440., 8000, 1, SampleRate);
+	plussound(ee, 392.,329.63, 8000, 1, SampleRate);
+	plussound(ee, 440.,493.88, 15000, 1, SampleRate);
+	plussound(ee, 392.,349.23, 8000, 1, SampleRate);
+	plussound(ee, 349.23, 277.18, 8000, 1, SampleRate);
+	plussound(ee, 392.,415.3, 13000, 2, SampleRate);
+	ee.close(); 
+
+	short* data = new short[SampleRate[0] * 5];
+	ifstream aaa("your.wav",ios::binary|ios::in);
+	if (!aaa)return 6666;
+	aaa.seekg(44);
+	aaa.read((char*)data, SampleRate[0] * 5 * sizeof(short));
+	aaa.close();
+	ofstream bbb("data.txt");
+	float dt = 1. / 10000;
+	for (int i = 0; i < 10000; i++) {
+		bbb << i * dt << "  " << data[i * 2] << "  " << data[i * 2 + 1] << endl;
+	}
+	bbb.close();
+	return 123;
+
+}
+void sound(ofstream& aa, float f, float a, float L,int* S) {
+	short* data = new short[*S*L];
+	float dt = 1. / S[0];
+	for (int i = 0; i < L*S[0]; i++) {
+		data[i] = (short)(a * sin(2.0 * pi * f * i * dt));
+	}
+	aa.write((char*)data, *S*L * sizeof(short));
+}
+void plussound(ofstream& aa, float f1, float f2, float a, float L, int* S) {
+	short* data = new short[*S * L];
+	float dt = 1. / S[0];
+	for (int i = 0; i < L/2 * S[0]; i++) {
+		data[2*i] = (short)(a *sin(2.0 * pi * f1 * i * dt));
+		data[2 * i + 1] = (short)(a * sin(2.0 * pi * f2 * i * dt));
+	}
+	aa.write((char*)data, *S * L * sizeof(short));
+}
